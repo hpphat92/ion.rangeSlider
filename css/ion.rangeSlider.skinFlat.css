@@ -48,7 +48,8 @@
     }
 
 .irs-shadow {
-    height: 3px; top: 34px;
+    height: 11px;
+    top: 25px;
     background: #000;
     opacity: 0.25;
 }
