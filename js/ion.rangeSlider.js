@@ -10,7 +10,7 @@
 // http://ionden.com/a/plugins/licence-en.html
 // =====================================================================================================================
 
-;(function(factory) {
+; (function (factory) {
     if (typeof define === "function" && define.amd) {
         define(["jquery"], function (jQuery) {
             return factory(jQuery, document, window, navigator);
@@ -20,7 +20,7 @@
     } else {
         factory(jQuery, document, window, navigator);
     }
-} (function ($, document, window, navigator, undefined) {
+}(function ($, document, window, navigator, undefined) {
     "use strict";
 
     // =================================================================================================================
@@ -42,7 +42,7 @@
             }
         }
         return false;
-    } ());
+    }());
     if (!Function.prototype.bind) {
         Function.prototype.bind = function bind(that) {
 
@@ -58,7 +58,7 @@
 
                     if (this instanceof bound) {
 
-                        var F = function(){};
+                        var F = function () { };
                         F.prototype = target.prototype;
                         var self = new F();
 
@@ -86,7 +86,7 @@
         };
     }
     if (!Array.prototype.indexOf) {
-        Array.prototype.indexOf = function(searchElement, fromIndex) {
+        Array.prototype.indexOf = function (searchElement, fromIndex) {
             var k;
             if (this == null) {
                 throw new TypeError('"this" is null or not defined');
@@ -125,17 +125,24 @@
         '<span class="irs-min">0</span><span class="irs-max">1</span>' +
         '<span class="irs-from">0</span><span class="irs-to">0</span><span class="irs-single">0</span>' +
         '</span>' +
-        '<span class="irs-grid"></span>' +
-        '<span class="irs-bar"></span>';
-
+        '<span class="irs-grid"></span>';
+       
+    var extra_html_1 =  '<span class="irs-bar"></span>';
+    var extra_html_2 =  '<span class="irs-bar irs-bar-custom"></span>';
+    
     var single_html =
-        '<span class="irs-bar-edge"></span>' +
+        '<span class="irs-bar-edge irs-single-custom"></span>' +
         '<span class="irs-shadow shadow-single"></span>' +
         '<span class="irs-slider single"></span>';
 
     var double_html =
         '<span class="irs-shadow shadow-from"></span>' +
         '<span class="irs-shadow shadow-to"></span>' +
+        '<span class="irs-slider from"></span>' +
+        '<span class="irs-slider to"></span>';
+    var double_html_2 =
+        '<span class="irs-shadow shadow-to"></span>' +
+        '<span class="irs-shadow shadow-from"></span>' +
         '<span class="irs-slider from"></span>' +
         '<span class="irs-slider to"></span>';
 
@@ -177,7 +184,6 @@
         this.is_active = false;
         this.is_resize = false;
         this.is_click = false;
-
         options = options || {};
 
         // cache for links to all DOM elements
@@ -273,7 +279,6 @@
         // default config
         config = {
             type: "single",
-
             min: 10,
             max: 100,
             from: null,
@@ -330,7 +335,8 @@
             onStart: null,
             onChange: null,
             onFinish: null,
-            onUpdate: null
+            onUpdate: null,
+            invert: false,
         };
 
 
@@ -393,9 +399,9 @@
             block: $inp.data("block"),
 
             extra_classes: $inp.data("extraClasses"),
+            invert: $inp.data("invert"),
         };
         config_from_data.values = config_from_data.values && config_from_data.values.split(",");
-
         for (prop in config_from_data) {
             if (config_from_data.hasOwnProperty(prop)) {
                 if (config_from_data[prop] === undefined || config_from_data[prop] === "") {
@@ -429,7 +435,7 @@
 
         // js config extends default config
         $.extend(config, options);
-
+        //console.log(options);
 
         // data config extends config
         $.extend(config, config_from_data);
@@ -508,8 +514,14 @@
             this.$cache.input.prop("readonly", true);
             this.$cache.cont = this.$cache.input.prev();
             this.result.slider = this.$cache.cont;
-
+           
             this.$cache.cont.html(base_html);
+            if (this.options.type === "single") {
+                this.$cache.cont.append(extra_html_2);
+            }
+            else{
+                this.$cache.cont.append(extra_html_1);
+            }
             this.$cache.rs = this.$cache.cont.find(".irs");
             this.$cache.min = this.$cache.cont.find(".irs-min");
             this.$cache.max = this.$cache.cont.find(".irs-max");
@@ -529,12 +541,18 @@
                 this.$cache.shad_single = this.$cache.cont.find(".shadow-single");
             } else {
                 this.$cache.cont.append(double_html);
+                if (this.options.invert === true) {
+                    this.$cache.shad_from = this.$cache.cont.find(".shadow-to");
+                    this.$cache.shad_to = this.$cache.cont.find(".shadow-from");
+               
+                }
+                else {
+                    this.$cache.shad_from = this.$cache.cont.find(".shadow-from");
+                    this.$cache.shad_to = this.$cache.cont.find(".shadow-to");
+                }
                 this.$cache.s_from = this.$cache.cont.find(".from");
                 this.$cache.s_to = this.$cache.cont.find(".to");
-                this.$cache.shad_from = this.$cache.cont.find(".shadow-from");
-                this.$cache.shad_to = this.$cache.cont.find(".shadow-to");
-
-                this.setTopHandler();
+                 this.setTopHandler();
             }
 
             if (this.options.hide_from_to) {
@@ -750,7 +768,7 @@
                 x = $handle.offset().left;
                 x += ($handle.width() / 2) - 1;
 
-                this.pointerClick("single", {preventDefault: function () {}, pageX: x});
+                this.pointerClick("single", { preventDefault: function () { }, pageX: x });
             }
         },
 
@@ -803,7 +821,7 @@
             if ($.contains(this.$cache.cont[0], e.target) || this.dragging) {
                 this.callOnFinish();
             }
-            
+
             this.dragging = false;
         },
 
@@ -1204,7 +1222,7 @@
                 return;
             }
 
-            if (this.coords.x_pointer < 0 || isNaN(this.coords.x_pointer)  ) {
+            if (this.coords.x_pointer < 0 || isNaN(this.coords.x_pointer)) {
                 this.coords.x_pointer = 0;
             } else if (this.coords.x_pointer > this.coords.w_rs) {
                 this.coords.x_pointer = this.coords.w_rs;
@@ -1602,7 +1620,16 @@
                     c.shad_single[0].style.left = from_min + "%";
                     c.shad_single[0].style.width = from_max + "%";
                 } else {
-                    c.shad_single[0].style.display = "none";
+                    from_min = this.convertToPercent(o.from);
+                    from_max = this.convertToPercent(o.max) - from_min;
+                    from_min = this.toFixed(from_min - (this.coords.p_handle / 100 * from_min));
+                    from_max = this.toFixed(from_max - (this.coords.p_handle / 100 * from_max));
+                    from_min = from_min + (this.coords.p_handle / 2);
+
+                    c.shad_single[0].style.display = "block";
+                    c.shad_single[0].style.left = from_min + "%";
+                    c.shad_single[0].style.width = from_max + "%";
+                    // c.shad_single[0].style.display = "none";
                 }
             } else {
                 if (o.from_shadow && (is_from_min || is_from_max)) {
@@ -1616,7 +1643,18 @@
                     c.shad_from[0].style.left = from_min + "%";
                     c.shad_from[0].style.width = from_max + "%";
                 } else {
-                    c.shad_from[0].style.display = "none";
+                   // c.shad_from[0].style.display = "none";
+                   from_min = this.convertToPercent(o.min);
+                    from_max = this.convertToPercent(o.from) - from_min;
+                    from_min = this.toFixed(from_min - (this.coords.p_handle / 100 * from_min));
+                    from_max = this.toFixed(from_max - (this.coords.p_handle / 100 * from_max));
+                    from_min = from_min + (this.coords.p_handle / 2);
+                   c.shad_from[0].style.display = "block";
+                   c.shad_from[0].style.left = from_min + "%";
+                   c.shad_from[0].style.width = from_max + "%";
+                  // c.shad_from[0].style.left = 0;
+                    //c.shad_from[0].style.width = (o.from/o.max)*100 + "%";
+                   //c.shad_from[0].style.width = (this.options.from/this.option.max) + "%";
                 }
 
                 if (o.to_shadow && (is_to_min || is_to_max)) {
@@ -1630,7 +1668,16 @@
                     c.shad_to[0].style.left = to_min + "%";
                     c.shad_to[0].style.width = to_max + "%";
                 } else {
-                    c.shad_to[0].style.display = "none";
+                    //c.shad_to[0].style.display = "none";
+                    to_min = this.convertToPercent(o.to);
+                    to_max = this.convertToPercent(o.max) - to_min;
+                    to_min = this.toFixed(to_min - (this.coords.p_handle / 100 * to_min));
+                    to_max = this.toFixed(to_max - (this.coords.p_handle / 100 * to_max));
+                    to_min = to_min + (this.coords.p_handle / 2);
+
+                    c.shad_to[0].style.display = "block";
+                    c.shad_to[0].style.left = to_min + "%";
+                    c.shad_to[0].style.width = to_max + "%";
                 }
             }
         },
@@ -2347,7 +2394,7 @@
             } else {
                 this.coords.w_handle = this.$cache.s_from.outerWidth(false);
             }
-            this.coords.p_handle = this.toFixed(this.coords.w_handle  / this.coords.w_rs * 100);
+            this.coords.p_handle = this.toFixed(this.coords.w_handle / this.coords.w_rs * 100);
             this.coords.grid_gap = this.toFixed((this.coords.p_handle / 2) - 0.1);
 
             this.$cache.grid[0].style.width = this.toFixed(100 - this.coords.p_handle) + "%";
@@ -2405,7 +2452,7 @@
     };
 
     $.fn.ionRangeSlider = function (options) {
-        return this.each(function() {
+        return this.each(function () {
             if (!$.data(this, "ionRangeSlider")) {
                 $.data(this, "ionRangeSlider", new IonRangeSlider(this, options, plugin_count++));
             }
@@ -2422,27 +2469,27 @@
 
     // MIT license
 
-    (function() {
+    (function () {
         var lastTime = 0;
         var vendors = ['ms', 'moz', 'webkit', 'o'];
-        for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-            window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-            window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                || window[vendors[x]+'CancelRequestAnimationFrame'];
+        for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+            window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+            window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
+                || window[vendors[x] + 'CancelRequestAnimationFrame'];
         }
 
         if (!window.requestAnimationFrame)
-            window.requestAnimationFrame = function(callback, element) {
+            window.requestAnimationFrame = function (callback, element) {
                 var currTime = new Date().getTime();
                 var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-                var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                var id = window.setTimeout(function () { callback(currTime + timeToCall); },
                     timeToCall);
                 lastTime = currTime + timeToCall;
                 return id;
             };
 
         if (!window.cancelAnimationFrame)
-            window.cancelAnimationFrame = function(id) {
+            window.cancelAnimationFrame = function (id) {
                 clearTimeout(id);
             };
     }());
